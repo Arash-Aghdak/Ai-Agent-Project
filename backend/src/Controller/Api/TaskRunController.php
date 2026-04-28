@@ -5,12 +5,12 @@ namespace App\Controller\Api;
 use App\Entity\Agent;
 use App\Entity\TaskRun;
 use App\Entity\User;
+use App\Service\TaskRunnerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Service\OpenAIService;
 
 final class TaskRunController extends AbstractController
 {
@@ -19,7 +19,7 @@ final class TaskRunController extends AbstractController
         int $id,
         Request $request, 
         EntityManagerInterface $entityManager,
-        OpenAIService $openAIService
+        TaskRunnerService $taskRunnerService
         ): JsonResponse {
 
         /** @var User|null $user */
@@ -47,29 +47,11 @@ final class TaskRunController extends AbstractController
             ], 400);
         }
 
-        $taskRun = new TaskRun();
-        $taskRun->setAgent($agent);
-        $taskRun->setCreatedBy($user);
-        $taskRun->setInputText($data['inputText']);
-        $prompt = sprintf(
-            "You are an AI agent with the role: %s.\n\nInstructions:\n%s\n\nTask:\n%s",
-            $agent->getRole(),
-            $agent->getInstructions(),
+        $taskRun = $taskRunnerService->run(
+            $agent,
+            $user,
             $data['inputText']
         );
-
-        try {
-            $output = $openAIService->generateText($prompt, $agent->getModel());
-            $taskRun->setStatus('completed');
-        } catch (\Throwable $e) {
-            $output = null;
-            $taskRun->setStatus('failed');
-            $taskRun->setOutputText($e->getMessage());
-        }
-        $taskRun->setOutputText($output);
-
-        $entityManager->persist($taskRun);
-        $entityManager->flush();
 
         return $this->json([
             'taskRunId' => $taskRun->getId(),
@@ -125,5 +107,4 @@ final class TaskRunController extends AbstractController
             'createdBy' => $user
         ]);
     }
-    // git test
 }
