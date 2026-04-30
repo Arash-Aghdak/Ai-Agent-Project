@@ -36,10 +36,22 @@ class TaskRun
     #[ORM\JoinColumn(nullable: false)]
     private ?User $createdBy = null;
 
-    public function __construct()
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $finalPrompt = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $errorMessage = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $startedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $finishedAt = null;
+
+   public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->status = 'completed';
+        $this->status = 'pending';
     }
 
     public function getId(): ?int
@@ -115,6 +127,54 @@ class TaskRun
     public function setCreatedBy(?User $createdBy): static
     {
         $this->createdBy = $createdBy;
+
+        return $this;
+    }
+
+    public function getFinalPrompt(): ?string
+    {
+        return $this->finalPrompt;
+    }
+
+    public function setFinalPrompt(?string $finalPrompt): static
+    {
+        $this->finalPrompt = $finalPrompt;
+
+        return $this;
+    }
+
+    public function getErrorMessage(): ?string
+    {
+        return $this->errorMessage;
+    }
+
+    public function setErrorMessage(?string $errorMessage): static
+    {
+        $this->errorMessage = $errorMessage;
+
+        return $this;
+    }
+
+    public function getStartedAt(): ?\DateTimeImmutable
+    {
+        return $this->startedAt;
+    }
+
+    public function setStartedAt(?\DateTimeImmutable $startedAt): static
+    {
+        $this->startedAt = $startedAt;
+
+        return $this;
+    }
+
+    public function getFinishedAt(): ?\DateTimeImmutable
+    {
+        return $this->finishedAt;
+    }
+
+    public function setFinishedAt(?\DateTimeImmutable $finishedAt): static
+    {
+        $this->finishedAt = $finishedAt;
 
         return $this;
     }

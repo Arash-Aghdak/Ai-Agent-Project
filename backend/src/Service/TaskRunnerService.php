@@ -22,29 +22,36 @@ class TaskRunnerService
         $taskRun->setAgent($agent);
         $taskRun->setCreatedBy($user);
         $taskRun->setInputText($inputText);
-
-        $output = $this->executeTask($agent, $inputText, $taskRun);
-        $taskRun->setOutputText($output);
+        $taskRun->setStatus('pending');
 
         $this->entityManager->persist($taskRun);
+        $this->entityManager->flush();
+
+        $this->executeTask($agent, $inputText, $taskRun);
+
         $this->entityManager->flush();
 
         return $taskRun;
     }
 
-    private function executeTask(Agent $agent, string $inputText, TaskRun $taskRun): string
+    private function executeTask(Agent $agent, string $inputText, TaskRun $taskRun): void
     {
+        $taskRun->setStatus('running');
+        $taskRun->setStartedAt(new \DateTimeImmutable());
+
+        $prompt = $this->promptBuilder->buildPrompt($agent, $inputText);
+        $taskRun->setFinalPrompt($prompt);
+
         try {
-            $prompt = $this->promptBuilder->buildPrompt($agent, $inputText);
             $output = $this->openAIService->generateText($prompt, $agent->getModel());
 
+            $taskRun->setOutputText($output);
             $taskRun->setStatus('completed');
-
-            return $output;
         } catch (\Throwable $e) {
+            $taskRun->setErrorMessage($e->getMessage());
             $taskRun->setStatus('failed');
-
-            return $e->getMessage();
         }
+
+        $taskRun->setFinishedAt(new \DateTimeImmutable());
     }
 }

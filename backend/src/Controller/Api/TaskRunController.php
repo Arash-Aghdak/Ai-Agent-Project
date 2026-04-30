@@ -57,6 +57,9 @@ final class TaskRunController extends AbstractController
             'taskRunId' => $taskRun->getId(),
             'status' => $taskRun->getStatus(),
             'outputText' => $taskRun->getOutputText(),
+            'errorMessage' => $taskRun->getErrorMessage(),
+            'startedAt' => $taskRun->getStartedAt()?->format('Y-m-d H:i:s'),
+            'finishedAt' => $taskRun->getFinishedAt()?->format('Y-m-d H:i:s'),
         ], 201);
     }
 
@@ -93,6 +96,9 @@ final class TaskRunController extends AbstractController
                 'inputText' => $run->getInputText(),
                 'outputText' => $run->getOutputText(),
                 'status' => $run->getStatus(),
+                'errorMessage' => $run->getErrorMessage(),
+                'startedAt' => $run->getStartedAt()?->format('Y-m-d H:i:s'),
+                'finishedAt' => $run->getFinishedAt()?->format('Y-m-d H:i:s'),
                 'createdAt' => $run->getCreatedAt()?->format('Y-m-d H:i:s'),
             ];
         }
