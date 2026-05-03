@@ -1,0 +1,27 @@
+<div class="h-screen flex flex-col bg-slate-100">
+  <mat-toolbar color="primary" class="shadow-md">
+    <span class="font-semibold tracking-wide">Mother Agent</span>
+  </mat-toolbar>
+
+  <div class="flex flex-1 overflow-hidden">
+    <aside class="w-64 bg-slate-900 text-white p-4">
+      <nav class="space-y-2">
+        <a routerLink="/dashboard" class="block rounded-lg px-4 py-2 hover:bg-slate-700">
+          Dashboard
+        </a>
+
+        <a routerLink="/agents" class="block rounded-lg px-4 py-2 hover:bg-slate-700">
+          Agents
+        </a>
+
+        <a routerLink="/runs" class="block rounded-lg px-4 py-2 hover:bg-slate-700">
+          Task Runs
+        </a>
+      </nav>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-6">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

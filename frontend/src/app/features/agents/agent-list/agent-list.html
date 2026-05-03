@@ -1,0 +1,13 @@
+<section class="space-y-6">
+  <h1 class="text-2xl font-bold">Agents</h1>
+
+  <div class="grid gap-4">
+    @for (agent of agents; track agent.id) {
+      <div class="bg-white p-4 rounded-xl shadow">
+        <h2 class="text-lg font-semibold">{{ agent.name }}</h2>
+        <p class="text-sm text-slate-600">{{ agent.role }}</p>
+        <p class="text-xs text-slate-400 mt-2">{{ agent.model }}</p>
+      </div>
+    }
+  </div>
+</section>
