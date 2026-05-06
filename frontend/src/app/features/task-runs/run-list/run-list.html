@@ -1,1 +1,92 @@
-<p>run-list works!</p>
+<section class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Task Runs</h1>
+      <p class="text-sm text-slate-500">
+        Execution history for this agent.
+      </p>
+    </div>
+
+    <a
+      routerLink="/agents"
+      class="rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100"
+    >
+      Back to Agents
+    </a>
+  </div>
+
+  @if (isLoading) {
+    <div class="rounded-xl bg-white p-6 shadow text-slate-500">
+      Loading task runs...
+    </div>
+  } @else if (errorMessage) {
+    <div class="rounded-xl bg-red-50 p-6 text-red-700">
+      {{ errorMessage }}
+    </div>
+  } @else if (runs.length === 0) {
+    <div class="rounded-xl bg-white p-6 shadow text-slate-500">
+      No task runs found.
+    </div>
+  } @else {
+    <div class="space-y-4">
+      @for (run of runs; track run.id) {
+        <div class="rounded-2xl bg-white p-5 shadow border border-slate-100">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h2 class="font-semibold text-slate-900">
+                Run #{{ run.id }}
+              </h2>
+
+              <p class="mt-1 text-sm text-slate-500">
+                Created: {{ run.createdAt }}
+              </p>
+            </div>
+
+            <span
+              class="rounded-full px-3 py-1 text-xs font-medium"
+              [ngClass]="{
+                'bg-green-100 text-green-700': run.status === 'completed',
+                'bg-red-100 text-red-700': run.status === 'failed',
+                'bg-yellow-100 text-yellow-700': run.status === 'running',
+                'bg-slate-100 text-slate-700': run.status !== 'completed' && run.status !== 'failed' && run.status !== 'running'
+              }"
+            >
+              {{ run.status }}
+            </span>
+          </div>
+
+          <div class="mt-4">
+            <p class="text-xs font-semibold uppercase text-slate-400">
+              Input
+            </p>
+            <p class="mt-1 whitespace-pre-line text-sm text-slate-700">
+              {{ run.inputText }}
+            </p>
+          </div>
+
+          @if (run.outputText) {
+            <div class="mt-4">
+              <p class="text-xs font-semibold uppercase text-slate-400">
+                Output
+              </p>
+              <p class="mt-1 whitespace-pre-line text-sm text-slate-700">
+                {{ run.outputText }}
+              </p>
+            </div>
+          }
+
+          @if (run.errorMessage) {
+            <div class="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
+              {{ run.errorMessage }}
+            </div>
+          }
+
+          <div class="mt-4 grid grid-cols-1 gap-2 text-xs text-slate-400 md:grid-cols-2">
+            <p>Started: {{ run.startedAt || '-' }}</p>
+            <p>Finished: {{ run.finishedAt || '-' }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</section>

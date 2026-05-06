@@ -1,13 +1,116 @@
 <section class="space-y-6">
-  <h1 class="text-2xl font-bold">Agents</h1>
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Agents</h1>
+      <p class="text-sm text-slate-500">Manage your AI agents.</p>
+    </div>
 
-  <div class="grid gap-4">
-    @for (agent of agents; track agent.id) {
-      <div class="bg-white p-4 rounded-xl shadow">
-        <h2 class="text-lg font-semibold">{{ agent.name }}</h2>
-        <p class="text-sm text-slate-600">{{ agent.role }}</p>
-        <p class="text-xs text-slate-400 mt-2">{{ agent.model }}</p>
-      </div>
-    }
+    <a
+      routerLink="/agents/create"
+      class="rounded-xl bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700"
+    >
+      + Create Agent
+    </a>
   </div>
+
+  @if (isLoading) {
+    <div class="rounded-xl bg-white p-6 shadow text-slate-500">
+      Loading agents...
+    </div>
+  } @else if (errorMessage) {
+    <div class="rounded-xl bg-red-50 p-6 text-red-700">
+      {{ errorMessage }}
+    </div>
+  } @else if (agents.length === 0) {
+    <div class="rounded-xl bg-white p-6 shadow text-slate-500">
+      No agents found.
+    </div>
+  } @else {
+    <div class="grid gap-4">
+      @for (agent of agents; track agent.id) {
+        <div class="bg-white p-5 rounded-xl shadow border border-slate-100">
+          <h2 class="text-lg font-semibold text-slate-900">
+            {{ agent.name }}
+          </h2>
+
+          <p class="text-sm text-slate-600 mt-1">
+            {{ agent.role }}
+          </p>
+
+          <p class="text-sm text-slate-500 mt-3">
+            {{ agent.instructions }}
+          </p>
+
+          <p class="text-xs text-slate-400 mt-3">
+            Model: {{ agent.model }}
+          </p>
+          <div class="mt-4">
+            <button
+              type="button"
+              (click)="openRunForm(agent)"
+              class="rounded-xl bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700"
+            >
+              ▶ Run Task
+            </button>
+            <a
+              [routerLink]="['/agents', agent.id, 'runs']"
+              class="rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100"
+            >
+              View Runs
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+  }
+  @if (selectedAgent) {
+    <div class="fixed inset-0 flex items-center justify-center bg-black/40 p-4">
+      <div class="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
+        <h2 class="text-xl font-bold text-slate-900">
+          Run Task: {{ selectedAgent.name }}
+        </h2>
+
+        <p class="mt-1 text-sm text-slate-500">
+          Enter the task input for this agent.
+        </p>
+
+        @if (runErrorMessage) {
+          <div class="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
+            {{ runErrorMessage }}
+          </div>
+        }
+
+        <textarea
+          name="inputText"
+          [(ngModel)]="inputText"
+          rows="6"
+          class="mt-4 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-400"
+          placeholder="Example: Write a business proposal for a bakery in Berlin."
+        ></textarea>
+
+        <div class="mt-4 flex gap-3">
+          <button
+            type="button"
+            (click)="runTask()"
+            [disabled]="isRunning"
+            class="rounded-xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-700 disabled:opacity-50"
+          >
+            @if (isRunning) {
+              Running...
+            } @else {
+              Run
+            }
+          </button>
+
+          <button
+            type="button"
+            (click)="cancelRun()"
+            class="rounded-xl border border-slate-300 px-5 py-2 text-slate-700 hover:bg-slate-100"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </section>
