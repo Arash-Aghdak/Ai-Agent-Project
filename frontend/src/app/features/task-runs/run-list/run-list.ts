@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AgentService } from '../../../core/services/agent';
+import { isPlatformBrowser } from '@angular/common';
+import { Component, Inject, OnInit, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-run-list',
@@ -20,12 +21,15 @@ export class RunList implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private agentService: AgentService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
     this.agentId = Number(this.route.snapshot.paramMap.get('id'));
-    this.loadRuns();
+      if (isPlatformBrowser(this.platformId)) {
+        this.loadRuns();
+      }
   }
 
   loadRuns(): void {
