@@ -24,6 +24,16 @@ export const routes: Routes = [
       import('./features/agents/agent-list/agent-list').then(m => m.AgentList),
   },
   {
+    path: 'agents/:agentId/runs/:runId',
+    loadComponent: () =>
+      import('./features/task-runs/run-detail/run-detail').then(m => m.RunDetail),
+  },
+  {
+    path: 'agents/:id/history',
+    loadComponent: () =>
+      import('./features/task-runs/run-history/run-history').then(m => m.RunHistory),
+  },
+  {
     path: 'agents/:id/runs',
     loadComponent: () =>
       import('./features/task-runs/run-list/run-list').then(m => m.RunList),

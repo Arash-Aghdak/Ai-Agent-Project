@@ -34,4 +34,8 @@ export class AgentService {
   getAgentRuns(agentId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${agentId}/runs`);
   }
+
+  deleteAgent(id: number) {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
 }

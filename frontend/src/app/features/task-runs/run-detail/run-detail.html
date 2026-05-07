@@ -1,1 +1,73 @@
-<p>run-detail works!</p>
+<section class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Run Detail</h1>
+      <p class="text-sm text-slate-500">
+        Full execution result for this task run.
+      </p>
+    </div>
+
+    <a
+      [routerLink]="['/agents', agentId, 'runs']"
+      class="rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100"
+    >
+      Back to Runs
+    </a>
+  </div>
+
+  @if (isLoading()) {
+    <div class="rounded-xl bg-white p-6 shadow text-slate-500">
+      Loading run detail...
+    </div>
+  } @else if (errorMessage()) {
+    <div class="rounded-xl bg-red-50 p-6 text-red-700">
+      {{ errorMessage() }}
+    </div>
+  } @else if (run()) {
+    <div class="rounded-2xl bg-white p-6 shadow border border-slate-100 space-y-6">
+      <div class="flex items-start justify-between">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">
+            Run #{{ run().id }}
+          </h2>
+
+          <p class="text-sm text-slate-500 mt-1">
+            Created: {{ run().createdAt }}
+          </p>
+        </div>
+
+        <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+          {{ run().status }}
+        </span>
+      </div>
+
+      <div>
+        <p class="text-xs font-semibold uppercase text-slate-400">Input</p>
+        <div class="mt-2 rounded-xl bg-slate-50 p-4 text-sm text-slate-700 whitespace-pre-line">
+          {{ run().inputText }}
+        </div>
+      </div>
+
+      <div>
+        <p class="text-xs font-semibold uppercase text-slate-400">Output</p>
+
+        <div class="prose prose-slate max-w-none mt-2 rounded-xl bg-slate-50 p-4">
+          <markdown
+            [data]="run().outputText || 'No output.'">
+          </markdown>
+        </div>
+      </div>
+
+      @if (run().errorMessage) {
+        <div class="rounded-xl bg-red-50 p-4 text-sm text-red-700">
+          {{ run().errorMessage }}
+        </div>
+      }
+
+      <div class="grid grid-cols-1 gap-3 text-sm text-slate-500 md:grid-cols-2">
+        <p>Started: {{ run().startedAt || '-' }}</p>
+        <p>Finished: {{ run().finishedAt || '-' }}</p>
+      </div>
+    </div>
+  }
+</section>

@@ -6,20 +6,99 @@
     </p>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div class="rounded-2xl bg-white p-6 shadow">
-      <p class="text-sm text-slate-500">Agents</p>
-      <h2 class="text-2xl font-bold">{{ agentCount }}</h2>
+  @if (isLoading()) {
+    <div class="rounded-2xl bg-white p-6 shadow text-slate-500">
+      Loading dashboard...
+    </div>
+  } @else if (errorMessage()) {
+    <div class="rounded-2xl bg-red-50 p-6 text-red-700">
+      {{ errorMessage() }}
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div class="rounded-2xl bg-white p-6 shadow">
+        <p class="text-sm text-slate-500">Agents</p>
+        <h2 class="text-2xl font-bold">{{ agentCount() }}</h2>
+      </div>
+
+      <div class="rounded-2xl bg-white p-6 shadow">
+        <p class="text-sm text-slate-500">Task Runs</p>
+        <h2 class="text-2xl font-bold">{{ runCount() }}</h2>
+      </div>
+
+      <div class="rounded-2xl bg-white p-6 shadow">
+        <p class="text-sm text-slate-500">Completed</p>
+        <h2 class="text-2xl font-bold text-green-600">{{ completedCount() }}</h2>
+      </div>
+
+      <div class="rounded-2xl bg-white p-6 shadow">
+        <p class="text-sm text-slate-500">Failed</p>
+        <h2 class="text-2xl font-bold text-red-600">{{ failedCount() }}</h2>
+      </div>
+
+      <div class="rounded-2xl bg-white p-6 shadow">
+        <p class="text-sm text-slate-500">Status</p>
+        <h2 class="text-2xl font-bold text-green-600">Ready</h2>
+      </div>
     </div>
 
-    <div class="rounded-2xl bg-white p-6 shadow">
-      <p class="text-sm text-slate-500">Task Runs</p>
-      <h2 class="text-2xl font-bold">{{ taskRunCount }}</h2>
-    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="rounded-2xl bg-white p-6 shadow border border-slate-100">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-bold text-slate-900">Agents</h2>
 
-    <div class="rounded-2xl bg-white p-6 shadow">
-      <p class="text-sm text-slate-500">Status</p>
-      <h2 class="text-2xl font-bold text-green-600">Ready</h2>
+          <a
+            routerLink="/agents"
+            class="text-sm font-medium text-slate-700 hover:underline"
+          >
+            View all
+          </a>
+        </div>
+
+        <div class="mt-5 space-y-3">
+          @for (agent of agents(); track agent.id) {
+            <div class="rounded-xl bg-slate-50 p-4">
+              <h3 class="font-semibold text-slate-900">{{ agent.name }}</h3>
+              <p class="text-sm text-slate-500">{{ agent.role }}</p>
+              <p class="mt-1 text-xs text-slate-400">Model: {{ agent.model }}</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-white p-6 shadow border border-slate-100">
+        <h2 class="text-lg font-bold text-slate-900">Recent Activity</h2>
+
+        @if (latestRuns().length === 0) {
+          <p class="mt-5 text-sm text-slate-500">No recent activity yet.</p>
+        } @else {
+          <div class="mt-5 space-y-4">
+            @for (run of latestRuns(); track run.id) {
+              <div class="flex items-start gap-3">
+                <div
+                  class="mt-1 h-3 w-3 rounded-full"
+                  [ngClass]="{
+                    'bg-green-500': run.status === 'completed',
+                    'bg-red-500': run.status === 'failed',
+                    'bg-yellow-500': run.status === 'running',
+                    'bg-slate-400': run.status !== 'completed' && run.status !== 'failed' && run.status !== 'running'
+                  }"
+                ></div>
+
+                <div>
+                  <p class="font-semibold text-slate-900">
+                    Run #{{ run.id }} — {{ run.status }}
+                  </p>
+                  <p class="text-sm text-slate-500">{{ run.createdAt }}</p>
+                  <p class="mt-1 max-h-12 overflow-hidden text-sm text-slate-700">
+                    {{ run.inputText }}
+                  </p>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
     </div>
-  </div>
+  }
 </section>

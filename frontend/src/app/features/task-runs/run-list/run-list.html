@@ -57,9 +57,9 @@
 
           <div class="mt-4">
             <p class="text-xs font-semibold uppercase text-slate-400">
-              Input
+              Input Preview
             </p>
-            <p class="mt-1 whitespace-pre-line text-sm text-slate-700">
+            <p class="mt-1 line-clamp-2 text-sm text-slate-700">
               {{ run.inputText }}
             </p>
           </div>
@@ -67,9 +67,9 @@
           @if (run.outputText) {
             <div class="mt-4">
               <p class="text-xs font-semibold uppercase text-slate-400">
-                Output
+                Output Preview
               </p>
-              <p class="mt-1 whitespace-pre-line text-sm text-slate-700">
+              <p class="mt-1 line-clamp-3 text-sm text-slate-700">
                 {{ run.outputText }}
               </p>
             </div>
@@ -86,6 +86,12 @@
             <p>Finished: {{ run.finishedAt || '-' }}</p>
           </div>
         </div>
+        <a
+          [routerLink]="['/agents', agentId, 'runs', run.id]"
+          class="mt-4 inline-block rounded-xl bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700"
+        >
+          View Details
+        </a>
       }
     </div>
   }

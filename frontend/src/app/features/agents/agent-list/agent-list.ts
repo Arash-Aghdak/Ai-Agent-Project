@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { AgentService } from '../../../core/services/agent';
 import { FormsModule } from '@angular/forms';
 
@@ -12,7 +12,7 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './agent-list.css',
 })
 export class AgentList implements OnInit {
-  agents: any[] = [];
+  agents= signal<any[]>([]);
   isLoading = true;
   errorMessage = '';
   selectedAgent: any = null;
@@ -22,13 +22,14 @@ export class AgentList implements OnInit {
 
   constructor(
     private agentService: AgentService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
     this.agentService.getAgents().subscribe({
       next: (data) => {
-        this.agents = [...data];
+        this.agents.set(data);
         this.isLoading = false;
         console.log('agents:', this.agents);
 
@@ -76,6 +77,29 @@ export class AgentList implements OnInit {
         this.isRunning = false;
         this.runErrorMessage = err?.error?.error || 'Task could not be started.';
         console.log('run task error:', err);
+      },
+    });
+  }
+
+  deleteAgent(agent: any): void {
+    const confirmed = confirm(
+      `Delete agent "${agent.name}"?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.agentService.deleteAgent(agent.id).subscribe({
+      next: () => {
+        this.agents.update((agents) =>
+          agents.filter((item) => item.id !== agent.id)
+        );
+
+        console.log('agent deleted');
+      },
+      error: (err) => {
+        console.log('delete error:', err);
       },
     });
   }

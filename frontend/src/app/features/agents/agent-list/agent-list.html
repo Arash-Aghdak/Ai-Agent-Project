@@ -21,13 +21,13 @@
     <div class="rounded-xl bg-red-50 p-6 text-red-700">
       {{ errorMessage }}
     </div>
-  } @else if (agents.length === 0) {
+  } @else if (agents().length === 0) {
     <div class="rounded-xl bg-white p-6 shadow text-slate-500">
       No agents found.
     </div>
   } @else {
     <div class="grid gap-4">
-      @for (agent of agents; track agent.id) {
+      @for (agent of agents(); track agent.id) {
         <div class="bg-white p-5 rounded-xl shadow border border-slate-100">
           <h2 class="text-lg font-semibold text-slate-900">
             {{ agent.name }}
@@ -44,7 +44,7 @@
           <p class="text-xs text-slate-400 mt-3">
             Model: {{ agent.model }}
           </p>
-          <div class="mt-4">
+          <div class="mt-4 flex gap-3">
             <button
               type="button"
               (click)="openRunForm(agent)"
@@ -58,6 +58,19 @@
             >
               View Runs
             </a>
+            <a
+              [routerLink]="['/agents', agent.id, 'history']"
+              class="rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100"
+            >
+              History
+            </a>
+            <button
+              type="button"
+              (click)="deleteAgent(agent)"
+              class="rounded-xl border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+            >
+              Delete
+            </button>
           </div>
         </div>
       }
