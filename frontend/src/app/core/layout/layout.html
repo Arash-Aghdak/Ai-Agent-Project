@@ -1,6 +1,20 @@
 <div class="h-screen flex flex-col bg-slate-100">
   <mat-toolbar color="primary" class="shadow-md">
-    <span class="font-semibold tracking-wide">Mother Agent</span>
+    <div class="flex w-full items-center justify-between">
+      <span class="font-semibold tracking-wide">
+        Mother Agent
+      </span>
+
+      @if (isLoggedIn()) {
+      <button
+        type="button"
+        (click)="logout()"
+        class="rounded-lg border border-black/30 px-4 py-1 text-sm text-black hover:bg-black/10"
+      >
+        Logout
+      </button>
+      }
+    </div>
   </mat-toolbar>
 
   <div class="flex flex-1 overflow-hidden">
@@ -14,9 +28,9 @@
           Agents
         </a>
 
-        <a routerLink="/runs" class="block rounded-lg px-4 py-2 hover:bg-slate-700">
+        <!--<a routerLink="/runs" class="block rounded-lg px-4 py-2 hover:bg-slate-700">
           Task Runs
-        </a>
+        </a>-->
       </nav>
     </aside>
 

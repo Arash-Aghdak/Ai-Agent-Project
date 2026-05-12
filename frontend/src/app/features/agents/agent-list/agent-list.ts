@@ -63,15 +63,24 @@ export class AgentList implements OnInit {
       return;
     }
 
+    const agentId = this.selectedAgent.id;
+
     this.isRunning = true;
     this.runErrorMessage = '';
 
-    this.agentService.runAgent(this.selectedAgent.id, this.inputText).subscribe({
+    this.agentService.runAgent(agentId, this.inputText).subscribe({
       next: (result) => {
         console.log('task run created:', result);
+
         this.isRunning = false;
         this.selectedAgent = null;
         this.inputText = '';
+
+        if (result?.taskRunId) {
+          this.router.navigate(['/agents', agentId, 'runs', result.taskRunId]);
+        } else {
+          this.router.navigate(['/agents', agentId, 'runs']);
+        }
       },
       error: (err) => {
         this.isRunning = false;

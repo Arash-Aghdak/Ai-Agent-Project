@@ -56,11 +56,6 @@ final class AgentController extends AbstractController
         $entityManager->persist($agent);
         $entityManager->flush();
 
-        return $this->json([
-            'message' => 'Agent created successfully.',
-            'id' => $agent->getId()
-        ], 201);
-
         $errors = $validator->validate($agent);
 
         if (count($errors) > 0) {
@@ -68,6 +63,11 @@ final class AgentController extends AbstractController
                 'errors' => (string) $errors
             ], 400);
         }
+
+        return $this->json([
+            'message' => 'Agent created successfully.',
+            'id' => $agent->getId()
+        ], 201);
     }
 
     #[Route('/api/agents', name: 'api_agents_list', methods: ['GET'])]
@@ -188,7 +188,7 @@ final class AgentController extends AbstractController
         ]);
     }
 
-    #[Route('/api/agents/{id}', name: 'api_agents_delete', methods: ['DELETE'])]
+   #[Route('/api/agents/{id}', name: 'api_agents_delete', methods: ['DELETE'])]
     public function delete(int $id, EntityManagerInterface $entityManager): JsonResponse
     {
         /** @var User|null $user */
@@ -208,15 +208,9 @@ final class AgentController extends AbstractController
             ], 404);
         }
 
-        /*$entityManager->remove($agent);
-        $entityManager->flush();*/
-
-        return $this->json([
-            'message' => 'Agent deleted successfully.'
-        ]);
-
         $runs = $entityManager->getRepository(TaskRun::class)->findBy([
-            'agent' => $agent
+            'agent' => $agent,
+            'createdBy' => $user,
         ]);
 
         foreach ($runs as $run) {
@@ -225,6 +219,10 @@ final class AgentController extends AbstractController
 
         $entityManager->remove($agent);
         $entityManager->flush();
+
+        return $this->json([
+            'message' => 'Agent deleted successfully.'
+        ]);
     }
 
     private function findUserAgentOrNull(int $id, User $user, EntityManagerInterface $entityManager): ?Agent

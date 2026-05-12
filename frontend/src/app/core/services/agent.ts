@@ -38,4 +38,12 @@ export class AgentService {
   deleteAgent(id: number) {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
+
+  getAgent(id: number) {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
+  }
+
+  updateAgent(id: number, payload: any) {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, payload);
+  }
 }
