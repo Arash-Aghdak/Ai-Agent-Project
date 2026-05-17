@@ -14,7 +14,7 @@ import { FormsModule } from '@angular/forms';
 export class AgentList implements OnInit {
   agents= signal<any[]>([]);
   isLoading = true;
-  errorMessage = '';
+  errorMessage = signal('');
   selectedAgent: any = null;
   inputText = '';
   isRunning = false;
@@ -37,7 +37,7 @@ export class AgentList implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = 'Agents could not be loaded.';
+        this.errorMessage.set('Agents could not be loaded.');
         console.log('agents error:', err);
 
         this.cdr.detectChanges();
@@ -63,6 +63,11 @@ export class AgentList implements OnInit {
       return;
     }
 
+    if (this.inputText.trim().length < 5) {
+      this.runErrorMessage = 'Task input must be at least 5 characters long.';
+      return;
+    }
+
     const agentId = this.selectedAgent.id;
 
     this.isRunning = true;
@@ -76,21 +81,25 @@ export class AgentList implements OnInit {
         this.selectedAgent = null;
         this.inputText = '';
 
-        if (result?.taskRunId) {
-          this.router.navigate(['/agents', agentId, 'runs', result.taskRunId]);
+        const taskRunId = result?.data?.taskRunId;
+
+        if (taskRunId) {
+          this.router.navigate(['/agents', agentId, 'runs', taskRunId]);
         } else {
           this.router.navigate(['/agents', agentId, 'runs']);
         }
       },
       error: (err) => {
         this.isRunning = false;
-        this.runErrorMessage = err?.error?.error || 'Task could not be started.';
+        this.runErrorMessage = this.getErrorMessage(err, 'Task could not be started.');
         console.log('run task error:', err);
       },
     });
   }
 
   deleteAgent(agent: any): void {
+    this.errorMessage.set('');
+
     const confirmed = confirm(
       `Delete agent "${agent.name}"?`
     );
@@ -108,8 +117,37 @@ export class AgentList implements OnInit {
         console.log('agent deleted');
       },
       error: (err) => {
+        this.errorMessage.set(
+          this.getErrorMessage(
+            err,
+            'Agent could not be deleted. Please check if the backend is running.'
+          )
+        );
+
         console.log('delete error:', err);
       },
     });
+  }
+
+  private getErrorMessage(err: any, fallback: string): string {
+    if (err?.status === 0) {
+      return 'Backend is not reachable. Please make sure Symfony is running.';
+    }
+
+    if (err?.error?.errors && Array.isArray(err.error.errors)) {
+      return err.error.errors
+        .map((item: any) => item.message)
+        .join(' ');
+    }
+
+    if (err?.error?.error) {
+      return err.error.error;
+    }
+
+    if (err?.error?.message) {
+      return err.error.message;
+    }
+
+    return fallback;
   }
 }

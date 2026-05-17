@@ -18,6 +18,8 @@ class TaskRunnerService
 
     public function run(Agent $agent, User $user, string $inputText): TaskRun
     {
+        $inputText = trim($inputText);
+
         $taskRun = new TaskRun();
         $taskRun->setAgent($agent);
         $taskRun->setCreatedBy($user);
@@ -29,8 +31,6 @@ class TaskRunnerService
 
         $this->executeTask($agent, $inputText, $taskRun);
 
-        $this->entityManager->flush();
-
         return $taskRun;
     }
 
@@ -39,19 +39,37 @@ class TaskRunnerService
         $taskRun->setStatus('running');
         $taskRun->setStartedAt(new \DateTimeImmutable());
 
+        $this->entityManager->flush();
+
         $prompt = $this->promptBuilder->buildPrompt($agent, $inputText);
         $taskRun->setFinalPrompt($prompt);
 
         try {
-            $output = $this->openAIService->generateText($prompt, $agent->getModel());
+            $output = $this->openAIService->generateText(
+                $prompt,
+                $agent->getModel()
+            );
 
             $taskRun->setOutputText($output);
             $taskRun->setStatus('completed');
         } catch (\Throwable $e) {
-            $taskRun->setErrorMessage($e->getMessage());
+            $taskRun->setErrorMessage($this->cleanErrorMessage($e->getMessage()));
             $taskRun->setStatus('failed');
         }
 
         $taskRun->setFinishedAt(new \DateTimeImmutable());
+
+        $this->entityManager->flush();
+    }
+
+    private function cleanErrorMessage(string $message): string
+    {
+        $message = trim($message);
+
+        if ($message === '') {
+            return 'Unknown task execution error.';
+        }
+
+        return mb_substr($message, 0, 2000);
     }
 }

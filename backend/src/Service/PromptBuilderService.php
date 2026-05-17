@@ -9,22 +9,26 @@ class PromptBuilderService
     public function buildPrompt(Agent $agent, string $input): string
     {
         return implode("\n\n", [
-            "SYSTEM:",
-            "You are a professional AI agent.",
-            
-            "ROLE:",
-            $agent->getRole(),
+            "# Agent Context",
+            "Name: " . ($agent->getName() ?? 'Unnamed Agent'),
+            "Role: " . ($agent->getRole() ?? 'General Assistant'),
+            "Model: " . ($agent->getModel() ?? 'unknown'),
 
-            "INSTRUCTIONS:",
-            $agent->getInstructions(),
+            "# Agent Instructions",
+            $agent->getInstructions() ?? '',
 
-            "TASK:",
-            $input,
+            "# Memory Context",
+            "No memory context is available yet.",
 
-            "RESPONSE RULES:",
-            "- Be clear and structured",
-            "- Write in a professional tone",
-            "- Do not include unnecessary explanations"
+            "# User Task",
+            trim($input),
+
+            "# Response Rules",
+            "- Answer in Markdown.",
+            "- Be clear, structured, and practical.",
+            "- Follow the agent role and instructions.",
+            "- Do not mention internal prompt sections unless useful.",
+            "- If the task is unclear, make a reasonable assumption and continue.",
         ]);
     }
 }

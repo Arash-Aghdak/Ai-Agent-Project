@@ -15,60 +15,66 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final class AgentController extends AbstractController
 {
     #[Route('/api/agents', name: 'api_agents_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $entityManager, ValidatorInterface $validator): JsonResponse
-    {
-        /** @var User|null $user */
-        $user = $this->getUser();
+public function create(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    ValidatorInterface $validator
+): JsonResponse {
 
-        if (!$user) {
-            return $this->json([
-                'error' => 'User not authenticated.'
-            ], 401);
-        }
+    /** @var User|null $user */
+    $user = $this->getUser();
 
-        $data = json_decode($request->getContent(), true);
+    if (!$user) {
+        return $this->json([
+            'error' => 'User not authenticated.'
+        ], 401);
+    }
 
-        if (!$data) {
-            return $this->json([
-                'error' => 'Invalid JSON data.'
-            ], 400);
-        }
+    $data = json_decode($request->getContent(), true);
 
-        if (
-            empty($data['name']) ||
-            empty($data['role']) ||
-            empty($data['instructions']) ||
-            empty($data['model'])
-        ) {
-            return $this->json([
-                'error' => 'Name, role, instructions and model are required.'
-            ], 400);
-        }
+    if (!is_array($data)) {
+        return $this->json([
+            'error' => 'Invalid JSON data.'
+        ], 400);
+    }
 
-        $agent = new Agent();
-        $agent->setName($data['name']);
-        $agent->setRole($data['role']);
-        $agent->setInstructions($data['instructions']);
-        $agent->setModel($data['model']);
-        $agent->setIsActive(true);
-        $agent->setCreatedBy($user);
+    $agent = new Agent();
 
-        $entityManager->persist($agent);
-        $entityManager->flush();
+    $agent->setName(trim($data['name'] ?? ''));
+    $agent->setRole(trim($data['role'] ?? ''));
+    $agent->setInstructions(trim($data['instructions'] ?? ''));
+    $agent->setModel(trim($data['model'] ?? ''));
+    $agent->setIsActive(true);
+    $agent->setCreatedBy($user);
 
-        $errors = $validator->validate($agent);
+    $errors = $validator->validate($agent);
 
-        if (count($errors) > 0) {
-            return $this->json([
-                'errors' => (string) $errors
-            ], 400);
+    if (count($errors) > 0) {
+
+        $formattedErrors = [];
+
+        foreach ($errors as $error) {
+            $formattedErrors[] = [
+                'field' => $error->getPropertyPath(),
+                'message' => $error->getMessage(),
+            ];
         }
 
         return $this->json([
-            'message' => 'Agent created successfully.',
-            'id' => $agent->getId()
-        ], 201);
+            'errors' => $formattedErrors
+        ], 400);
     }
+
+    $entityManager->persist($agent);
+    $entityManager->flush();
+
+    return $this->json([
+        'message' => 'Agent created successfully.',
+        'data' => [
+            'id' => $agent->getId(),
+        ]
+    ], 201);
+}
 
     #[Route('/api/agents', name: 'api_agents_list', methods: ['GET'])]
     public function list(EntityManagerInterface $entityManager): JsonResponse
@@ -134,8 +140,12 @@ final class AgentController extends AbstractController
     }
 
     #[Route('/api/agents/{id}', name: 'api_agents_update', methods: ['PUT'])]
-    public function update(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
-    {
+    public function update(
+        int $id,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator
+    ): JsonResponse {
         /** @var User|null $user */
         $user = $this->getUser();
 
@@ -155,36 +165,56 @@ final class AgentController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
 
-        if (!$data) {
+        if (!is_array($data)) {
             return $this->json([
                 'error' => 'Invalid JSON data.'
             ], 400);
         }
 
-        if (isset($data['name']) && !empty($data['name'])) {
-            $agent->setName($data['name']);
+        if (array_key_exists('name', $data)) {
+            $agent->setName(trim((string) $data['name']));
         }
 
-        if (isset($data['role']) && !empty($data['role'])) {
-            $agent->setRole($data['role']);
+        if (array_key_exists('role', $data)) {
+            $agent->setRole(trim((string) $data['role']));
         }
 
-        if (isset($data['instructions']) && !empty($data['instructions'])) {
-            $agent->setInstructions($data['instructions']);
+        if (array_key_exists('instructions', $data)) {
+            $agent->setInstructions(trim((string) $data['instructions']));
         }
 
-        if (isset($data['model']) && !empty($data['model'])) {
-            $agent->setModel($data['model']);
+        if (array_key_exists('model', $data)) {
+            $agent->setModel(trim((string) $data['model']));
         }
 
-        if (isset($data['isActive'])) {
+        if (array_key_exists('isActive', $data)) {
             $agent->setIsActive((bool) $data['isActive']);
+        }
+
+        $errors = $validator->validate($agent);
+
+        if (count($errors) > 0) {
+            $formattedErrors = [];
+
+            foreach ($errors as $error) {
+                $formattedErrors[] = [
+                    'field' => $error->getPropertyPath(),
+                    'message' => $error->getMessage(),
+                ];
+            }
+
+            return $this->json([
+                'errors' => $formattedErrors
+            ], 400);
         }
 
         $entityManager->flush();
 
         return $this->json([
-            'message' => 'Agent updated successfully.'
+            'message' => 'Agent updated successfully.',
+            'data' => [
+                'id' => $agent->getId(),
+            ]
         ]);
     }
 

@@ -48,6 +48,20 @@
         </div>
       </div>
 
+      @if (run().finalPrompt) {
+        <div>
+          <p class="text-xs font-semibold uppercase text-slate-400">Final Prompt</p>
+
+          <details class="mt-2 rounded-xl bg-slate-900 p-4 text-sm text-slate-100">
+            <summary class="cursor-pointer font-medium text-slate-200">
+              Show prompt sent to OpenAI
+            </summary>
+
+            <pre class="mt-4 whitespace-pre-wrap text-xs leading-relaxed text-slate-200">{{ run().finalPrompt }}</pre>
+          </details>
+        </div>
+      }
+
       <div>
         <p class="text-xs font-semibold uppercase text-slate-400">Output</p>
 

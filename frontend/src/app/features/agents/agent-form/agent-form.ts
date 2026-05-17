@@ -70,8 +70,18 @@ export class AgentForm implements OnInit {
   onSubmit(): void {
     this.errorMessage.set('');
 
-    if (!this.agent.name.trim() || !this.agent.role.trim() || !this.agent.instructions.trim()) {
-      this.errorMessage.set('Please fill in all required fields.');
+    if (this.agent.name.trim().length < 3) {
+      this.errorMessage.set('Agent name must be at least 3 characters long.');
+      return;
+    }
+
+    if (this.agent.role.trim().length < 3) {
+      this.errorMessage.set('Agent role must be at least 3 characters long.');
+      return;
+    }
+
+    if (this.agent.instructions.trim().length < 10) {
+      this.errorMessage.set('Agent instructions must be at least 10 characters long.');
       return;
     }
 
@@ -85,7 +95,9 @@ export class AgentForm implements OnInit {
         },
         error: (err) => {
           this.isSaving.set(false);
-          this.errorMessage.set(err?.error?.error || 'Agent could not be updated.');
+          this.errorMessage.set(
+            this.getErrorMessage(err, 'Agent could not be updated.')
+          );
           console.log('update agent error:', err);
         },
       });
@@ -100,9 +112,29 @@ export class AgentForm implements OnInit {
       },
       error: (err) => {
         this.isSaving.set(false);
-        this.errorMessage.set(err?.error?.error || 'Agent could not be created.');
+        this.errorMessage.set(
+          this.getErrorMessage(err, 'Agent could not be created.')
+        );
         console.log('create agent error:', err);
       },
     });
+  }
+
+  private getErrorMessage(err: any, fallback: string): string {
+    if (err?.error?.errors && Array.isArray(err.error.errors)) {
+      return err.error.errors
+        .map((item: any) => item.message)
+        .join(' ');
+    }
+
+    if (err?.error?.error) {
+      return err.error.error;
+    }
+
+    if (err?.error?.message) {
+      return err.error.message;
+    }
+
+    return fallback;
   }
 }

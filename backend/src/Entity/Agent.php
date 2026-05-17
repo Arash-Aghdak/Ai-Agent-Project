@@ -18,19 +18,39 @@ class Agent
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'Agent name is required.')]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: 'Agent name must be at least {{ limit }} characters long.',
+        maxMessage: 'Agent name cannot be longer than {{ limit }} characters.'
+    )]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'Agent role is required.')]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: 'Agent role must be at least {{ limit }} characters long.',
+        maxMessage: 'Agent role cannot be longer than {{ limit }} characters.'
+    )]
     private ?string $role = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'Agent instructions are required.')]
+    #[Assert\Length(
+        min: 10,
+        minMessage: 'Agent instructions must be at least {{ limit }} characters long.'
+    )]
     private ?string $instructions = null;
 
     #[ORM\Column(length: 100)]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'Model is required.')]
+    #[Assert\Choice(
+        choices: ['gpt-4o-mini', 'gpt-4o', 'gpt-4.1-mini', 'gpt-4.1'],
+        message: 'Invalid model selected.'
+    )]
     private ?string $model = null;
 
     #[ORM\Column]

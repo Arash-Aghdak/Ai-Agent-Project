@@ -17,10 +17,10 @@ final class TaskRunController extends AbstractController
     #[Route('/api/agents/{id}/run', name: 'api_agents_run', methods: ['POST'])]
     public function run(
         int $id,
-        Request $request, 
+        Request $request,
         EntityManagerInterface $entityManager,
         TaskRunnerService $taskRunnerService
-        ): JsonResponse {
+    ): JsonResponse {
 
         /** @var User|null $user */
         $user = $this->getUser();
@@ -41,25 +41,52 @@ final class TaskRunController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
 
-        if (!$data || empty($data['inputText'])) {
+        if (!is_array($data)) {
             return $this->json([
-                'error' => 'inputText is required.'
+                'error' => 'Invalid JSON data.'
+            ], 400);
+        }
+
+        $inputText = trim((string) ($data['inputText'] ?? ''));
+
+        if ($inputText === '') {
+            return $this->json([
+                'errors' => [
+                    [
+                        'field' => 'inputText',
+                        'message' => 'Task input is required.'
+                    ]
+                ]
+            ], 400);
+        }
+
+        if (mb_strlen($inputText) < 5) {
+            return $this->json([
+                'errors' => [
+                    [
+                        'field' => 'inputText',
+                        'message' => 'Task input must be at least 5 characters long.'
+                    ]
+                ]
             ], 400);
         }
 
         $taskRun = $taskRunnerService->run(
             $agent,
             $user,
-            $data['inputText']
+            $inputText
         );
 
         return $this->json([
-            'taskRunId' => $taskRun->getId(),
-            'status' => $taskRun->getStatus(),
-            'outputText' => $taskRun->getOutputText(),
-            'errorMessage' => $taskRun->getErrorMessage(),
-            'startedAt' => $taskRun->getStartedAt()?->format('Y-m-d H:i:s'),
-            'finishedAt' => $taskRun->getFinishedAt()?->format('Y-m-d H:i:s'),
+            'message' => 'Task run created successfully.',
+            'data' => [
+                'taskRunId' => $taskRun->getId(),
+                'status' => $taskRun->getStatus(),
+                'outputText' => $taskRun->getOutputText(),
+                'errorMessage' => $taskRun->getErrorMessage(),
+                'startedAt' => $taskRun->getStartedAt()?->format('Y-m-d H:i:s'),
+                'finishedAt' => $taskRun->getFinishedAt()?->format('Y-m-d H:i:s'),
+            ]
         ], 201);
     }
 
@@ -97,6 +124,7 @@ final class TaskRunController extends AbstractController
                 'outputText' => $run->getOutputText(),
                 'status' => $run->getStatus(),
                 'errorMessage' => $run->getErrorMessage(),
+                'finalPrompt' => $run->getFinalPrompt(),
                 'startedAt' => $run->getStartedAt()?->format('Y-m-d H:i:s'),
                 'finishedAt' => $run->getFinishedAt()?->format('Y-m-d H:i:s'),
                 'createdAt' => $run->getCreatedAt()?->format('Y-m-d H:i:s'),
